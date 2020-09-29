@@ -35,6 +35,8 @@ const intialize = {
         "View all departments.",
         "View all roles.",
         "Add an employee.",
+        "Add a department.",
+        "Add a role.",
         "Exit"
     ]
 }
@@ -48,10 +50,13 @@ function init() {
                 viewDepartments()
             } else if (response.route === "View all roles.") {
                 viewRoles()
-            } else if (response.route === "Add an employee."){
+            } else if (response.route === "Add an employee.") {
                 addEmployee()
-            }
-            else if (response.route === "Exit") {
+            } else if (response.route === "Add a department.") {
+                addDeparment()
+            } else if (response.route === "Add a role.") {
+                addRole()
+            } else if (response.route === "Exit") {
                 connection.end()
             }
         })
@@ -111,15 +116,64 @@ const employeeQuestions = [
     //     ]
     // }
 ]
-function addEmployee(){
+function addEmployee() {
     inquirer.prompt(employeeQuestions)
-    .then(function(newEmployee){
-        connection.query(
-            `INSERT INTO employees (first_name, last_name) VALUES ("${newEmployee.firstName}", "${newEmployee.lastName}")`,
-            function(err, res){
-                if (err) throw err;
-                // res.send()
+        .then(function (newEmployee) {
+            connection.query(
+                `INSERT INTO employees (first_name, last_name) VALUES ("${newEmployee.firstName}", "${newEmployee.lastName}")`,
+                function (err, res) {
+                    if (err) throw err;
+                    console.log("Success!")
+                    init()
+                })
+        })
+}
+
+const departmentQuestion = {
+    name: "deptName",
+    type: "input",
+    message: "What department would you like to add?"
+}
+
+function addDeparment() {
+    inquirer.prompt(departmentQuestion)
+        .then(function (newDepartment) {
+            connection.query(`INSERT INTO departments (name) VALUES ("${newDepartment.deptName}")`, function (err, res) {
+                if (err) throw err
+                console.log("Success!")
                 init()
             })
+        })
+}
+
+const roleQuestions = [
+    {
+        name: "title",
+        type: "input",
+        message: "What is the new role's title?"
+    },
+    {
+        name: "salary",
+        type: "input",
+        message: "What is this role's salary?"
+    },
+    // {
+    //     name: "department",
+    //     type: "list",
+    //     message: "What department does this role work in?",
+    //     choices: [
+    //         // -----Array containing all departments
+    //     ]
+    // }
+]
+
+function addRole() {
+    inquirer.prompt(roleQuestions)
+    .then(function(newRole){
+        connection.query(`INSERT INTO roles (title, salary) VALUES ("${newRole.title}", "${newRole.salary}")`, function(err, res){
+            if (err) throw err
+            console.log("Success!")
+            init()
+        })
     })
 }
