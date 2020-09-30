@@ -37,6 +37,7 @@ const intialize = {
         "Add an employee.",
         "Add a department.",
         "Add a role.",
+        "Remove an employee.",
         "Exit"
     ]
 }
@@ -56,6 +57,8 @@ function init() {
                 addDeparment()
             } else if (response.route === "Add a role.") {
                 addRole()
+            } else if (response.route === "Remove an employee."){
+                removeEmployee()
             } else if (response.route === "Exit") {
                 connection.end()
             }
@@ -97,16 +100,13 @@ const employeeQuestions = [
         type: "input",
         message: "What is the employee's last name?"
     },
-    // {
-    //     name: "role",
-    //     type: "input",
-    //     message: "What is this employee's role?"
-    // },
-    // {
-    //     name: "salary",
-    //     type: "input",
-    //     message: "What is this employee's salary?"
-    // },
+    {
+        name: "role",
+        type: "list",
+        message: "What is this employee's role?",
+        choices: findRoles()
+
+    }
     // {
     //     name: "manager",
     //     type: "list",
@@ -116,17 +116,30 @@ const employeeQuestions = [
     //     ]
     // }
 ]
-function addEmployee() {
-    inquirer.prompt(employeeQuestions)
-        .then(function (newEmployee) {
-            connection.query(
-                `INSERT INTO employees (first_name, last_name) VALUES ("${newEmployee.firstName}", "${newEmployee.lastName}")`,
-                function (err, res) {
-                    if (err) throw err;
-                    console.log("Success!")
-                    init()
-                })
+
+function findRoles() {
+    const roles = []
+    connection.query("SELECT * FROM roles", function (err, res) {
+        res.forEach(role => {
+            roles.push(role.title)
         })
+    })
+    return roles
+};
+
+function addEmployee() {
+    connection.query("SELECT * FROM roles", function (err, res) {
+        inquirer.prompt(employeeQuestions)
+            .then(function (newEmployee) {
+                connection.query(
+                    `INSERT INTO employees (first_name, last_name, role_id) VALUES ("${newEmployee.firstName}", "${newEmployee.lastName}", ?)`, [res.find(role => role.title === newEmployee.role).id],
+                    function (err, res) {
+                        if (err) throw err;
+                        console.log("Success!")
+                        init()
+                    })
+            })
+    })
 }
 
 const departmentQuestion = {
@@ -157,22 +170,67 @@ const roleQuestions = [
         type: "input",
         message: "What is this role's salary?"
     },
-    // {
-    //     name: "department",
-    //     type: "list",
-    //     message: "What department does this role work in?",
-    //     choices: [
-    //         // -----Array containing all departments
-    //     ]
-    // }
+    {
+        name: "department",
+        type: "list",
+        message: "What department does this role work in?",
+        choices: findDepartments()
+    }
 ]
 
+function findDepartments() {
+    const departments = []
+    connection.query("SELECT * FROM departments", function (err, res) {
+        res.forEach(dept => {
+            departments.push(dept.name)
+        })
+        // console.log(departments)
+    })
+    return departments
+    // console.log(departments)
+};
+
 function addRole() {
-    inquirer.prompt(roleQuestions)
-    .then(function(newRole){
-        connection.query(`INSERT INTO roles (title, salary) VALUES ("${newRole.title}", "${newRole.salary}")`, function(err, res){
-            if (err) throw err
-            console.log("Success!")
+    connection.query("SELECT * FROM departments", function (err, res) {
+        inquirer.prompt(roleQuestions)
+            .then(function (newRole) {
+                connection.query(`INSERT INTO roles (title, salary, department_id) VALUES ("${newRole.title}", "${newRole.salary}", ?)`, [res.find(dept => dept.name === newRole.department).id], function (err, res) {
+                    if (err) throw err
+                    // console.log("Success!")
+                    init()
+                })
+            })
+    })
+}
+
+const employeeRemoveQuestion = {
+    name: "employeeToRemove",
+    type: "list",
+    message: "Which employee would you like to remove?",
+    choices: findEmployees()
+}
+
+function findEmployees(){
+    const employees = []
+    connection.query("SELECT * FROM employees", function (err, res) {
+        res.forEach(emp => {
+            employees.push(emp.first_name + " " + emp.last_name)
+        })
+        // console.log(departments)
+    })
+    return employees
+    // console.log(departments)
+}
+
+function removeEmployee() {
+    connection.query("SELECT * FROM employees", function(err, res){
+        if (err) throw err
+        inquirer.prompt(employeeRemoveQuestion)
+        .then(function(employee){
+            const employeeString = employee.employeeToRemove
+            const splitEmployee = employeeString.split(" ")
+            console.log(splitEmployee)
+            connection.query(`DELETE FROM employees WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`)
             init()
         })
     })
