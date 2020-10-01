@@ -26,7 +26,7 @@ connection.connect(function (err) {
     init()
 });
 
-const intialize = {
+const initialize = {
     name: "route",
     type: "list",
     message: "What would you like to do?",
@@ -37,6 +37,7 @@ const intialize = {
         "Add an employee.",
         "Add a department.",
         "Add a role.",
+        "Update an employee.",
         "Remove an employee.",
         "Remove a role.",
         "Exit"
@@ -44,16 +45,7 @@ const intialize = {
 }
 
 function init() {
-    // connection.query("SELECT * FROM employees", function(err, res){
-    //     if (err) throw err
-    // })
-    // connection.query("SELECT * FROM departments", function(err, res){
-    //     if (err) throw err
-    // })
-    // connection.query("SELECT * FROM roles", function(err, res){
-    //     if (err) throw err
-    // })
-    inquirer.prompt(intialize)
+    inquirer.prompt(initialize)
         .then(function (response) {
             if (response.route === "View all employees.") {
                 viewEmployees()
@@ -67,6 +59,8 @@ function init() {
                 addDeparment()
             } else if (response.route === "Add a role.") {
                 addRole()
+            } else if (response.route === "Update an employee.") {
+                updateEmployee()
             } else if (response.route === "Remove an employee.") {
                 removeEmployee()
             } else if (response.route === "Remove a role.") {
@@ -230,6 +224,91 @@ function addRole() {
                 })
             })
     })
+}
+
+const updateEmpQuestions = [
+    {
+        name: "employeeName",
+        type: "list",
+        message: "Which employee would you like to update?",
+        choices: findEmployees()
+    },
+    {
+        name: "route",
+        type: "list",
+        message: "What would you like to update for this employee?",
+        choices: [
+            "First name",
+            "Last name",
+            "Role",
+            "Manager"
+        ]
+    }
+]
+
+const updateRoleQuestion = {
+    name: "newRole",
+    type: "list",
+    message: "What would you like their new role to be?",
+    choices: findRoles()
+}
+
+const updateMgrQuestion = {
+    name: "newMgr",
+    type: "list",
+    message: "Who would you like their new manager to be?",
+    choices: findManager()
+}
+
+function updateEmployee() {
+    inquirer.prompt(updateEmpQuestions)
+        .then(function (employeeToUpdate) {
+            // console.log(employeeToUpdate)
+            const employeeString = employeeToUpdate.employeeName
+            const splitEmployee = employeeString.split(" ")
+            if (employeeToUpdate.route === "First name") {
+                inquirer.prompt(
+                    {
+                        name: "newFirstName",
+                        type: "input",
+                        message: "What would you like their first name to be?"
+                    }
+                ).then(function (newFirst) {
+                    connection.query(`UPDATE employees SET first_name = "${newFirst.newFirstName}" WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`)
+                    init()
+                })
+            } else if (employeeToUpdate.route === "Last name") {
+                inquirer.prompt(
+                    {
+                        name: "newLastName",
+                        type: "input",
+                        message: "What would you like their last name to be?"
+                    }
+                ).then(function (newLast) {
+                    connection.query(`UPDATE employees SET last_name = "${newLast.newLastName}" WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`)
+                    init()
+                })
+            } else if (employeeToUpdate.route === "Role") {
+                inquirer.prompt(updateRoleQuestion)
+                    .then(function (setNewRole) {
+                        connection.query(`SELECT * FROM roles`, function (err, res) {
+                            console.log(res)
+                            connection.query(`UPDATE employees SET role_id = ? WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`, [res.find(role => role.title === setNewRole.newRole).id])
+                            init()
+                        })
+                    })
+            } else if (employeeToUpdate.route === "Manager") {
+                inquirer.prompt(updateMgrQuestion)
+                    .then(function (newManager) {
+                        connection.query(`SELECT * FROM employees`, function (err, res) {
+                            const managerString = newManager.newMgr
+                            const splitManager = managerString.split(" ")
+                            connection.query(`UPDATE employees SET manager_id = ? WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`, [res.find(mgr => mgr.first_name === splitManager[0] && mgr.last_name === splitManager[1]).id])
+                            init()
+                        })
+                    })
+            }
+        })
 }
 
 const employeeRemoveQuestion = {
