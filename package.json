@@ -4,6 +4,7 @@
   "description": "",
   "main": "employeeManager.js",
   "scripts": {
+    "start": "node employeeManager.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

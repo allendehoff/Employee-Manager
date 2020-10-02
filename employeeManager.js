@@ -44,29 +44,66 @@ const initialize = {
     ]
 }
 
+// function init() {
+//     inquirer.prompt(initialize)
+//         .then(function (response) {
+//             if (response.route === "View all employees.") {
+//                 viewEmployees()
+//             } else if (response.route === "View all departments.") {
+//                 viewDepartments()
+//             } else if (response.route === "View all roles.") {
+//                 viewRoles()
+//             } else if (response.route === "Add an employee.") {
+//                 addEmployee()
+//             } else if (response.route === "Add a department.") {
+//                 addDeparment()
+//             } else if (response.route === "Add a role.") {
+//                 addRole()
+//             } else if (response.route === "Update an employee.") {
+//                 updateEmployee()
+//             } else if (response.route === "Remove an employee.") {
+//                 removeEmployee()
+//             } else if (response.route === "Remove a role.") {
+//                 removeRole()
+//             } else if (response.route === "Exit") {
+//                 connection.end()
+//             }
+//         })
+// }
+
 function init() {
     inquirer.prompt(initialize)
         .then(function (response) {
-            if (response.route === "View all employees.") {
-                viewEmployees()
-            } else if (response.route === "View all departments.") {
-                viewDepartments()
-            } else if (response.route === "View all roles.") {
-                viewRoles()
-            } else if (response.route === "Add an employee.") {
-                addEmployee()
-            } else if (response.route === "Add a department.") {
-                addDeparment()
-            } else if (response.route === "Add a role.") {
-                addRole()
-            } else if (response.route === "Update an employee.") {
-                updateEmployee()
-            } else if (response.route === "Remove an employee.") {
-                removeEmployee()
-            } else if (response.route === "Remove a role.") {
-                removeRole()
-            } else if (response.route === "Exit") {
-                connection.end()
+            switch (response.route) {
+                case "View all employees.":
+                    viewEmployees();
+                    break;
+                case "View all departments.":
+                    viewDepartments();
+                    break;
+                case "View all roles.":
+                    viewRoles();
+                    break;
+                case "Add an employee.":
+                    addEmployee();
+                    break;
+                case "Add a department.":
+                    addDeparment();
+                    break;
+                case "Add a role.":
+                    addRole();
+                    break;
+                case "Update an employee.":
+                    updateEmployee();
+                    break;
+                case "Remove an employee.":
+                    removeEmployee();
+                    break;
+                case "Remove a role.":
+                    removeRole();
+                    break;
+                case "Exit":
+                    connection.end();
             }
         })
 }
@@ -292,7 +329,7 @@ function updateEmployee() {
                 inquirer.prompt(updateRoleQuestion)
                     .then(function (setNewRole) {
                         connection.query(`SELECT * FROM roles`, function (err, res) {
-                            console.log(res)
+                            // console.log(res)
                             connection.query(`UPDATE employees SET role_id = ? WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`, [res.find(role => role.title === setNewRole.newRole).id])
                             init()
                         })
@@ -335,14 +372,14 @@ function removeEmployee() {
             .then(function (employee) {
                 const employeeString = employee.employeeToRemove
                 const splitEmployee = employeeString.split(" ")
-                console.log(splitEmployee)
+                // console.log(splitEmployee)
                 connection.query(`DELETE FROM employees WHERE first_name = "${splitEmployee[0]}" AND last_name = "${splitEmployee[1]}"`)
                 init()
             })
     })
 }
 
-let roleRemoveQuestion = {
+const roleRemoveQuestion = {
     name: "roleToRemove",
     type: "list",
     message: "Which role would you like to remove?",
@@ -351,7 +388,7 @@ let roleRemoveQuestion = {
 
 function removeRole() {
     connection.query("SELECT * FROM roles", function (err, res) {
-        console.log(res)
+        // console.log(res)
         if (err) throw err
         inquirer.prompt(roleRemoveQuestion)
             .then(function (role) {
