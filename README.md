@@ -1,6 +1,6 @@
 # Employee Management Application
 
-This is a command-line application (CLI) which helps a user to manage their employee database including employees, roles, and departments. A user can add or remove employees, add or remove roles in their company, and add or remove departments. Additionally, a user can modify an employee's name, their role in the company, or their manager.
+This is a command-line application which helps a user to manage their employee database including employees, roles, and departments. A user can add or remove employees, add or remove roles in their company, and add or remove departments. Additionally, a user can modify an employee's name, their role in the company, or their manager.
 
 ## Installation
 
